@@ -51,9 +51,18 @@ function Compile-ALApp {
 
     & $alc.fullname $alcParameters
 
+    $successfullyCompiled = $true
+
     # Check Translationfile
-    $TranslationFile = Get-ChildItem -path $appProjectFolder -Recurse -filter "*.g.xlf"
-    if ($TranslationFile) {
+    $appJson = Get-Content (Join-Path $appProjectFolder 'app.json') | ConvertFrom-Json
+    $translationsActivated = $appJson.features -and $appJson.features.ToLower().Contains('translationfile')
+    if($translationsActivated){
+        $TranslationFile = Get-ChildItem -path $appProjectFolder -Recurse -filter "apps.json"
+        if (!$TranslationFile) {
+            $successfullyCompiled = $false
+        }
+    }
+    if ($successfullyCompiled) {
         Write-Host "Successfully compiled $appProjectFolder" -ForegroundColor Green
     } else {
         write-error "Compilation ended with errors"
